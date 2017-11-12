@@ -1,0 +1,32 @@
+#!/usr/bin/expect -f
+
+set env(LANG) C
+
+spawn telnet -8E localhost 6523
+set telnet $spawn_id
+
+sleep 1
+expect "login: "
+send "ftp\r"
+expect "Password: "
+send "SECRET PASSWORD\r"
+
+expect "Start sending now"
+set stty_init raw
+
+expect "to cancel\r\n"
+fconfigure $telnet -encoding binary -translation binary
+
+spawn sz -q {*}$argv
+
+set sz $spawn_id
+fconfigure $sz -encoding binary -translation binary
+
+#overlay sx {*}$argv
+
+#interact -u $telnet
+
+interact {
+  -input $sz -output $telnet
+  -input $telnet -output $sz
+}
